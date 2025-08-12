@@ -1,10 +1,32 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Users, Car, Mail, Phone, User, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, MapPin, Car, Mail, User, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
+
+type Vehiculo = {
+  id: number;
+  nombre: string;
+  capacidad: string;
+  descripcion: string;
+  precio: string;
+  imagen: string;
+};
+
+type FormDataState = {
+  nombre: string;
+  telefono: string;
+  email: string;
+  tipoServicio: string[];
+  fecha: string;
+  hora: string;
+  puntoRecogida: string;
+  stops: string[];
+  puntoDestino: string;
+  vehiculoSeleccionado: Vehiculo | null;
+};
 
 const LuxuryTransportWidget = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataState>({
     // Datos del cliente
     nombre: '',
     telefono: '',
@@ -69,14 +91,14 @@ const LuxuryTransportWidget = () => {
 
   const totalSteps = 6;
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = <K extends keyof FormDataState>(field: K, value: FormDataState[K]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleServicioToggle = (servicio) => {
+  const handleServicioToggle = (servicio: string) => {
     setFormData(prev => ({
       ...prev,
       tipoServicio: prev.tipoServicio.includes(servicio)
@@ -92,14 +114,14 @@ const LuxuryTransportWidget = () => {
     }));
   };
 
-  const removeStop = (index) => {
+  const removeStop = (index: number) => {
     setFormData(prev => ({
       ...prev,
       stops: prev.stops.filter((_, i) => i !== index)
     }));
   };
 
-  const updateStop = (index, value) => {
+  const updateStop = (index: number, value: string) => {
     setFormData(prev => ({
       ...prev,
       stops: prev.stops.map((stop, i) => i === index ? value : stop)
@@ -143,7 +165,7 @@ const LuxuryTransportWidget = () => {
   };
 
   const generateHours = () => {
-    const hours = [];
+    const hours: string[] = [];
     for (let i = 0; i < 24; i++) {
       const hour = i.toString().padStart(2, '0') + ':00';
       const hour30 = i.toString().padStart(2, '0') + ':30';
