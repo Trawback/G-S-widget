@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Calendar, MapPin, Car, Mail, User, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
 
 type Vehiculo = {
@@ -15,7 +16,8 @@ type FormDataState = {
   nombre: string;
   telefono: string;
   email: string;
-  tipoServicio: string[];
+  tipoServicio: string | null;
+  hourlyHours: number;
   fecha: string;
   hora: string;
   puntoRecogida: string;
@@ -32,7 +34,8 @@ const LuxuryTransportWidget = () => {
     telefono: '',
     email: '',
     // Servicio
-    tipoServicio: [],
+    tipoServicio: null,
+    hourlyHours: 3,
     // Fecha y hora
     fecha: '',
     hora: '',
@@ -45,13 +48,11 @@ const LuxuryTransportWidget = () => {
   });
 
   const servicios = [
-    'Traslado al Aeropuerto',
-    'Servicio Corporativo',
-    'Eventos Especiales',
-    'Tour de Ciudad',
-    'Servicio por Horas',
-    'Bodas',
-    'Graduaciones'
+    'Airport Arrival',
+    'Airport Departure',
+    'Point to Point',
+    'Hourly',
+    'Event/Group',
   ];
 
   const vehiculos = [
@@ -101,9 +102,7 @@ const LuxuryTransportWidget = () => {
   const handleServicioToggle = (servicio: string) => {
     setFormData(prev => ({
       ...prev,
-      tipoServicio: prev.tipoServicio.includes(servicio)
-        ? prev.tipoServicio.filter(s => s !== servicio)
-        : [...prev.tipoServicio, servicio]
+      tipoServicio: prev.tipoServicio === servicio ? null : servicio
     }));
   };
 
@@ -125,6 +124,20 @@ const LuxuryTransportWidget = () => {
     setFormData(prev => ({
       ...prev,
       stops: prev.stops.map((stop, i) => i === index ? value : stop)
+    }));
+  };
+
+  const incrementHourlyHours = () => {
+    setFormData(prev => ({
+      ...prev,
+      hourlyHours: Math.min(prev.hourlyHours + 1, 12)
+    }));
+  };
+
+  const decrementHourlyHours = () => {
+    setFormData(prev => ({
+      ...prev,
+      hourlyHours: Math.max(prev.hourlyHours - 1, 3)
     }));
   };
 
@@ -185,47 +198,47 @@ const LuxuryTransportWidget = () => {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <User className="w-16 h-16 text-amber-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Información Personal</h2>
-              <p className="text-gray-600">Comencemos con tus datos de contacto</p>
+              <User className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Book Your Luxury Chauffeur Service</h2>
+              <p className="text-gray-600">Discreet. Punctual. Tailored by Godandi & Sons.</p>
             </div>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre completo *
+                Full name*
                 </label>
                 <input
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => handleInputChange('nombre', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
                   placeholder="Ingresa tu nombre completo"
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Número de teléfono *
+                Mobile number*
                 </label>
                 <input
                   type="tel"
                   value={formData.telefono}
                   onChange={(e) => handleInputChange('telefono', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
                   placeholder="+52 55 1234 5678"
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Correo electrónico *
+                Email address*
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-black"
                   placeholder="tu@email.com"
                 />
               </div>
@@ -238,8 +251,8 @@ const LuxuryTransportWidget = () => {
           <div className="space-y-6">
             <div className="text-center">
               <Car className="w-16 h-16 text-amber-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Tipo de Servicio</h2>
-              <p className="text-gray-600">Selecciona uno o más servicios que necesitas</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Service type*</h2>
+              <p className="text-gray-600">Airport Transfer · Point-to-Point · Hourly (As-Directed) · Event/Group</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -248,14 +261,14 @@ const LuxuryTransportWidget = () => {
                   key={index}
                   onClick={() => handleServicioToggle(servicio)}
                   className={`p-4 rounded-lg border-2 text-left transition-all ${
-                    formData.tipoServicio.includes(servicio)
+                    formData.tipoServicio === servicio
                       ? 'border-amber-500 bg-amber-50 text-amber-700'
                       : 'border-gray-200 bg-white text-gray-700 hover:border-amber-300'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{servicio}</span>
-                    {formData.tipoServicio.includes(servicio) && (
+                    {formData.tipoServicio === servicio && (
                       <div className="w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
@@ -264,6 +277,34 @@ const LuxuryTransportWidget = () => {
                 </button>
               ))}
             </div>
+
+            {formData.tipoServicio === 'Hourly' && (
+              <div className="mt-4 p-4 border border-amber-200 rounded-lg bg-amber-50">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select hours (min. 3)
+                </label>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={decrementHourlyHours}
+                    disabled={formData.hourlyHours <= 3}
+                    className={`px-3 py-2 rounded-lg border ${formData.hourlyHours <= 3 ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-white text-gray-700 border-gray-300 hover:border-amber-300'}`}
+                  >
+                    −
+                  </button>
+                  <span className="text-gray-800 font-semibold min-w-[5ch] text-center">
+                    {formData.hourlyHours} hrs
+                  </span>
+                  <button
+                    type="button"
+                    onClick={incrementHourlyHours}
+                    className="px-3 py-2 rounded-lg border bg-white text-gray-700 border-gray-300 hover:border-amber-300"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         );
 
@@ -433,7 +474,7 @@ const LuxuryTransportWidget = () => {
               <div className="border-b border-gray-200 pb-4">
                 <h3 className="font-semibold text-gray-800 mb-2">Servicios</h3>
                 <p className="text-sm text-gray-600">
-                  {formData.tipoServicio.join(', ')}
+                  {formData.tipoServicio ?? ''}
                 </p>
               </div>
               
@@ -477,7 +518,7 @@ const LuxuryTransportWidget = () => {
       case 1:
         return formData.nombre && formData.telefono && formData.email;
       case 2:
-        return formData.tipoServicio.length > 0;
+        return !!formData.tipoServicio;
       case 3:
         return formData.fecha && formData.hora;
       case 4:
@@ -494,15 +535,24 @@ const LuxuryTransportWidget = () => {
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-6">
-        <h1 className="text-3xl font-bold text-center mb-4">Reserva tu Transporte de Lujo</h1>
+      <div className="bg-black text-white p-6">
+        <div className="flex justify-center mb-4">
+          <Image
+            src="/logodorado (1).png"
+            alt="Logo"
+            width={120}
+            height={120}
+            priority
+            className="h-16 w-auto"
+          />
+        </div>
         
         {/* Progress Bar */}
         <div className="flex items-center justify-between mb-6">
           {Array.from({ length: totalSteps }, (_, i) => (
             <div key={i} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                i + 1 <= currentStep ? 'bg-white text-amber-500' : 'bg-amber-400 text-white'
+                i + 1 <= currentStep ? 'bg-white text-amber-500' : 'bg-yellow-500 text-white'
               }`}>
                 {i + 1}
               </div>
@@ -537,7 +587,7 @@ const LuxuryTransportWidget = () => {
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
-          Anterior
+          Back
         </button>
 
         {currentStep === totalSteps ? (
@@ -559,11 +609,11 @@ const LuxuryTransportWidget = () => {
             disabled={!isStepValid()}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
               isStepValid()
-                ? 'bg-amber-500 text-white hover:bg-amber-600'
+                ? 'bg-yellow-500 text-black hover:bg-amber-600'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
-            Siguiente
+            Next
             <ChevronRight className="w-5 h-5" />
           </button>
         )}
