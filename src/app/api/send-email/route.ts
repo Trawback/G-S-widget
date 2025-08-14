@@ -4,14 +4,23 @@ import nodemailer from 'nodemailer';
 // 👇 Asegura runtime Node para que Nodemailer funcione en Vercel
 export const runtime = 'nodejs';
 
-// Types
+// ---------- Tipos (añadimos PlaceSelection y compatibilidad) ----------
+type PlaceSelection = {
+  input: string;                // lo tecleado por el usuario
+  description?: string;         // place.name o prediction.description
+  formattedAddress?: string;    // place.formatted_address
+  placeId?: string;             // place.place_id
+  lat?: number;
+  lng?: number;
+};
+
 interface VehicleSelected {
   id: number;
   nombre: string;
   capacidad: string;
   descripcion?: string;
   precio?: string;
-  imagen?: string; // puede venir como "/images/cars/sedan.png" o URL absoluta
+  imagen?: string; // "/images/cars/sedan.png" o URL absoluta
   categoria?: 'Sedan' | 'SUV' | 'Sprinter' | 'Bus' | 'Electric' | 'Van';
   features?: string[];
   make?: string;
@@ -30,9 +39,17 @@ interface ReservationData {
   hourlyHours: number;
   fecha: string;
   hora: string;
-  puntoRecogida: string;
-  stops: string[];
-  puntoDestino: string;
+
+  // Compatibilidad: aún recibes estos strings…
+  puntoRecogida?: string;
+  puntoDestino?: string;
+  stops?: string[];
+
+  // …pero soportamos también los objetos enriquecidos:
+  pickup?: PlaceSelection;
+  dropoff?: PlaceSelection;
+  stopsResolved?: PlaceSelection[];
+
   vehiculoSeleccionado: VehicleSelected | null;
   phoneCountryCode?: string;
   phoneLocal?: string;
@@ -46,13 +63,34 @@ interface EmailBody {
   formData?: ReservationData;
 }
 
-// Helper: resuelve URL absoluta a assets
+// ---------- Helpers ----------
 function makeAbsolute(urlOrPath: string | undefined, base: string): string | undefined {
   if (!urlOrPath) return undefined;
   if (/^https?:\/\//i.test(urlOrPath)) return urlOrPath;
-  // normaliza doble slash
   const u = urlOrPath.startsWith('/') ? urlOrPath : `/${urlOrPath}`;
   return `${base}${u}`;
+}
+
+// Normaliza lo que venga (string u objeto) a PlaceSelection
+function normalizePlace(
+  place: PlaceSelection | string | undefined
+): PlaceSelection | undefined {
+  if (!place) return undefined;
+  if (typeof place === 'string') return { input: place };
+  return place;
+}
+
+function fmtPlace(p?: PlaceSelection): string {
+  if (!p) return '';
+  return p.formattedAddress || p.description || p.input || '';
+}
+
+function mapsLink(p?: PlaceSelection): string {
+  if (!p) return '#';
+  if (p.placeId) return `https://www.google.com/maps/search/?api=1&query=place_id:${encodeURIComponent(p.placeId)}`;
+  if (p.lat != null && p.lng != null) return `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+  const q = p.formattedAddress || p.description || p.input;
+  return q ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}` : '#';
 }
 
 export async function POST(req: NextRequest) {
@@ -61,7 +99,6 @@ export async function POST(req: NextRequest) {
     const { summary, userEmail, subject, clientName, formData } = body || {};
 
     // 1) Base público de assets (usa el dominio que SÍ sirve /public)
-    //    Recomiendo setear en Vercel: NEXT_PUBLIC_ASSETS_URL="https://TU-DOMINIO.com"
     const host = req.headers.get('host') || '';
     const isLocal = host.includes('localhost') || host.startsWith('127.');
     const fallbackBase = `${isLocal ? 'http' : 'https'}://${host}`;
@@ -79,7 +116,19 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 3) HTML con CID (logo/car)
+    // ---------- Normalización de direcciones ----------
+    // Soportamos:
+    // - pickup/dropoff/stopsResolved como objetos PlaceSelection
+    // - puntoRecogida/puntoDestino/stops como strings (legacy)
+    const pickup   = normalizePlace(formData?.pickup)   || normalizePlace(formData?.puntoRecogida);
+    const dropoff  = normalizePlace(formData?.dropoff)  || normalizePlace(formData?.puntoDestino);
+    const stopsArr: PlaceSelection[] =
+      (formData?.stopsResolved && formData.stopsResolved.length
+        ? formData.stopsResolved
+        : (formData?.stops || []).map(s => normalizePlace(s)!)
+      ).filter(Boolean) as PlaceSelection[];
+
+    // 3) HTML con CID (logo/car) y direcciones resueltas + links
     const buildSummaryHTML = (data: ReservationData | undefined, fallbackSummary?: string): string => {
       if (!data) {
         return `<pre style="white-space:pre-wrap;font-family:Arial,sans-serif;background:#f8f9fa;padding:20px;border-radius:8px;">${fallbackSummary ?? 'No details provided'}</pre>`;
@@ -135,24 +184,43 @@ export async function POST(req: NextRequest) {
                         </tr>
                       </table>
 
-                                             <div style="background-color:#f8f9fa;border:2px solid #ebc651;border-radius:10px;padding:20px;margin-bottom:25px;text-align:center;">
-                         <h3 style="margin:0 0 15px 0;color:#000000;font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;">Route Information</h3>
-                         <div style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-bottom:15px;">
-                           <p style="margin:8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Pickup Address:</strong></p>
-                           <p style="margin:4px 0;color:#374151;font-size:14px;word-wrap:break-word;">${data?.puntoRecogida ?? ''}</p>
-                         </div>
-                         ${data?.stops && data.stops.length > 0 ? `
-                         <div style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-bottom:15px;">
-                           <p style="margin:8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Stops:</strong></p>
-                           <p style="margin:4px 0;color:#374151;font-size:14px;word-wrap:break-word;">${data.stops.join(', ')}</p>
-                         </div>
-                         ` : ''}
-                         <div style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;">
-                           <p style="margin:8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Drop-off Address:</strong></p>
-                           <p style="margin:4px 0;color:#374151;font-size:14px;word-wrap:break-word;">${data?.puntoDestino ?? ''}</p>
-                         </div>
-                       </div>
+                      <!-- Route Information -->
+                      <div style="background-color:#f8f9fa;border:2px solid #ebc651;border-radius:10px;padding:20px;margin-bottom:25px;text-align:center;">
+                        <h3 style="margin:0 0 15px 0;color:#000000;font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;">Route Information</h3>
 
+                        <!-- Pickup -->
+                        <div style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-bottom:15px;text-align:left;">
+                          <p style="margin:0 0 8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Pickup Address:</strong></p>
+                          <p style="margin:0;color:#374151;font-size:14px;word-wrap:break-word;">${fmtPlace(pickup)}</p>
+                          ${pickup ? `<p style="margin:8px 0 0 0;font-size:12px;">
+                            <a href="${mapsLink(pickup)}" style="color:#2563eb;text-decoration:none;">Ver en Google Maps</a>
+                          </p>` : ``}
+                        </div>
+
+                        <!-- Stops -->
+                        ${stopsArr.length ? `
+                          <div style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-bottom:15px;text-align:left;">
+                            <p style="margin:0 0 8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Stops:</strong></p>
+                            <ul style="margin:0;padding-left:18px;color:#374151;font-size:14px;">
+                              ${stopsArr.map(s => `<li style="margin:4px 0;">
+                                <span>${fmtPlace(s)}</span>
+                                ${mapsLink(s) !== '#' ? ` — <a href="${mapsLink(s)}" style="color:#2563eb;text-decoration:none;font-size:12px;">Mapa</a>` : ``}
+                              </li>`).join('')}
+                            </ul>
+                          </div>
+                        ` : ''}
+
+                        <!-- Dropoff -->
+                        <div style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;text-align:left;">
+                          <p style="margin:0 0 8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Drop-off Address:</strong></p>
+                          <p style="margin:0;color:#374151;font-size:14px;word-wrap:break-word;">${fmtPlace(dropoff)}</p>
+                          ${dropoff ? `<p style="margin:8px 0 0 0;font-size:12px;">
+                            <a href="${mapsLink(dropoff)}" style="color:#2563eb;text-decoration:none;">Ver en Google Maps</a>
+                          </p>` : ``}
+                        </div>
+                      </div>
+
+                      <!-- Selected Vehicle -->
                       <div style="background-color:#f8f9fa;border:2px solid #ebc651;border-radius:10px;padding:20px;margin-bottom:25px;text-align:center;">
                         <h3 style="margin:0 0 15px 0;color:#000000;font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;">Selected Vehicle</h3>
                         ${carAbs ? `
@@ -208,9 +276,9 @@ export async function POST(req: NextRequest) {
     await transporter.sendMail({
       from: process.env.GMAIL_USER,
       to: clientTo,
-      subject: '✅ Reservation Confirmed - Godandi & Sons Luxury Chauffeur',
+      subject: '✅ Quote confirmation - Godandi & Sons',
       html,
-      attachments, // <-- imprescindible
+      attachments,
     });
 
     // 6) Enviar (admin)
@@ -219,7 +287,7 @@ export async function POST(req: NextRequest) {
       to: process.env.ADMIN_EMAIL || process.env.GMAIL_USER,
       subject: emailSubject,
       html,
-      attachments, // <-- también para que el admin vea las imágenes
+      attachments,
     });
 
     return NextResponse.json({ success: true, message: 'Emails sent' });
