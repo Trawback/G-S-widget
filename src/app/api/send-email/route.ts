@@ -1,9 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+// Types
+interface VehicleSelected {
+	id: number;
+	nombre: string;
+	capacidad: string;
+	descripcion?: string;
+	precio?: string;
+	imagen?: string;
+	categoria?: 'Sedan' | 'SUV' | 'Sprinter' | 'Bus' | 'Electric' | 'Van';
+	features?: string[];
+	make?: string;
+	model?: string;
+	year?: number;
+	engine?: string;
+	fuelEfficiency?: string;
+	gallery?: string[];
+}
+
+interface ReservationData {
+	nombre: string;
+	telefono: string;
+	email: string;
+	tipoServicio: string | null;
+	hourlyHours: number;
+	fecha: string;
+	hora: string;
+	puntoRecogida: string;
+	stops: string[];
+	puntoDestino: string;
+	vehiculoSeleccionado: VehicleSelected | null;
+	phoneCountryCode?: string;
+	phoneLocal?: string;
+}
+
+interface EmailBody {
+	summary?: string;
+	userEmail?: string;
+	subject?: string;
+	clientName?: string;
+	formData?: ReservationData;
+}
+
 export async function POST(req: NextRequest) {
 	try {
-		const body = await req.json();
+		const body: EmailBody = await req.json();
 		const { summary, userEmail, subject, clientName, formData } = body || {};
 
 		// Resolve absolute base URL for assets (logo)
@@ -22,7 +64,7 @@ export async function POST(req: NextRequest) {
 			},
 		});
 
-		const buildSummaryHTML = (data: any, fallbackSummary?: string) => {
+		const buildSummaryHTML = (data: ReservationData | undefined, fallbackSummary?: string): string => {
 			if (!data) {
 				return `<pre style="white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;">${fallbackSummary ?? 'No details provided'}</pre>`;
 			}
@@ -33,12 +75,12 @@ export async function POST(req: NextRequest) {
 			const textDark = '#111827';
 			const textMuted = '#6b7280';
 
-			const features = Array.isArray(data?.vehiculoSeleccionado?.features)
-				? data.vehiculoSeleccionado.features.join(', ')
+			const features = Array.isArray(data.vehiculoSeleccionado?.features)
+				? (data.vehiculoSeleccionado?.features as string[]).join(', ')
 				: '';
 
 			return `
-				<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:${brandGray};padding:24px 0;font-family:Arial, sans-serif;">
+				<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:${brandGray};padding:24px 0;font-family:Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
 					<tr>
 						<td align="center">
 							<table role="presentation" cellpadding="0" cellspacing="0" width="680" style="background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;">
@@ -114,14 +156,14 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ success: false, message: 'Missing user email' }, { status: 400 });
 		}
 
-		const html = formData ? buildSummaryHTML(formData, summary) : `<pre style="white-space:pre-wrap">${summary ?? 'Reservation'}</pre>`;
-		const emailSubject = subject || `New website quote request - ${clientName ?? formData?.nombre ?? ''}`;
+		const html: string = formData ? buildSummaryHTML(formData, summary) : `<pre style="white-space:pre-wrap">${summary ?? 'Reservation'}</pre>`;
+		const emailSubject: string = subject || `New Luxury Transport Reservation - ${clientName ?? formData?.nombre ?? ''}`;
 
 		// Send email to client
 		await transporter.sendMail({
 			from: process.env.GMAIL_USER,
 			to: clientTo,
-			subject: 'New quote request from website- Godandi & Sons',
+			subject: '✅ Reservation Confirmed - Godandi & Sons Luxury Chauffeur',
 			html,
 		});
 
@@ -134,8 +176,9 @@ export async function POST(req: NextRequest) {
 		});
 
 		return NextResponse.json({ success: true, message: 'Emails sent' });
-	} catch (err: any) {
-		console.error('Email API error:', err);
-		return NextResponse.json({ success: false, message: 'Email send failed', error: err?.message }, { status: 500 });
+	} catch (err: unknown) {
+		const message = err instanceof Error ? err.message : 'Unknown error';
+		console.error('Email API error:', message);
+		return NextResponse.json({ success: false, message: 'Email send failed', error: message }, { status: 500 });
 	}
 } 
