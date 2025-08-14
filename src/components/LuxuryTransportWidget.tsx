@@ -138,7 +138,7 @@ const LuxuryTransportWidget = () => {
         capacidad: '1-2 passengers',
         descripcion: 'Mercedes-Benz S-Class',
         precio: 'From $150/hour',
-        imagen: '/g&s_s450.jpg',
+        imagen: '/g&s_S450.jpg',
         categoria: 'Sedan',
         features: ['Air Conditioning', 'Leather Seats', 'GPS Navigation'],
         make: 'Mercedes-Benz',
@@ -146,7 +146,7 @@ const LuxuryTransportWidget = () => {
         year: 2024,
         engine: '3.0L Inline-6 Turbo + EQ Boost',
         fuelEfficiency: '22/29 MPG (city/hwy)',
-        gallery: ['/g&s_s450.jpg']
+        gallery: ['/g&s_S450.jpg']
       },
       {
         id: 3,
@@ -478,14 +478,21 @@ Submitted by: Godandi & Sons Luxury Transport Widget
   };
 
   const submitReservation = async () => {
+    console.log('submitReservation called');
+    console.log('Current form data:', formData);
+    console.log('Current step:', currentStep);
+    console.log('Is step valid:', isStepValid());
+    
     setIsSubmitting(true);
     setSubmitMessage('');
 
     try {
       // Generar el resumen
       const summary = generateReservationSummary();
+      console.log('Generated summary:', summary);
 
       // Enviar por email usando la API
+      console.log('Sending email to API...');
       const emailResponse = await fetch('/api/send-email', {
         method: 'POST',
         headers: {
@@ -499,7 +506,9 @@ Submitted by: Godandi & Sons Luxury Transport Widget
         }),
       });
 
+      console.log('Email response status:', emailResponse.status);
       const emailResult = await emailResponse.json();
+      console.log('Email result:', emailResult);
 
       if (emailResponse.ok) {
         setSubmitMessage('✅ Your reservation has been sent successfully! We will contact you soon with your quote.');
@@ -543,7 +552,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
       }
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error in submitReservation:', error);
       setSubmitMessage('❌ Error sending reservation. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -1249,7 +1258,11 @@ Submitted by: Godandi & Sons Luxury Transport Widget
 
         {currentStep === totalSteps ? (
           <button
-            onClick={submitReservation}
+            onClick={() => {
+              console.log('Get a quote button clicked!');
+              console.log('Button should be enabled:', isStepValid());
+              submitReservation();
+            }}
             disabled={!isStepValid()}
             className={`flex items-center gap-2 px-8 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto justify-center ${
               isStepValid()
