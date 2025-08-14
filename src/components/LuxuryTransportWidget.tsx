@@ -785,6 +785,41 @@ Submitted by: Godandi & Sons Luxury Transport Widget
               <p className="text-gray-600">Add your pickup and drop-off addresses</p>
             </div>
             
+            {!isMapsLoaded && !mapsError && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-blue-600 text-sm">
+                  Loading Google Maps... Please wait.
+                </p>
+              </div>
+            )}
+
+            {mapsError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600 text-sm mb-2">
+                  Error loading Google Maps. Please check:
+                </p>
+                <ul className="text-red-600 text-sm list-disc list-inside space-y-1">
+                  <li>Google Maps API key is configured</li>
+                  <li>Places API is enabled in Google Cloud Console</li>
+                  <li>Billing is set up for your Google Cloud project</li>
+                  <li>No referrer restrictions blocking this domain</li>
+                </ul>
+                <div className="mt-3 p-3 bg-gray-100 rounded text-xs text-gray-700">
+                  <p><strong>Debug Info:</strong></p>
+                  <p>Google Maps loaded: {window.google ? 'Yes' : 'No'}</p>
+                  <p>Maps object: {window.google?.maps ? 'Yes' : 'No'}</p>
+                  <p>Places library: {window.google?.maps?.places ? 'Yes' : 'No'}</p>
+                  <p>API Key: {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? 'Configured' : 'Missing'}</p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+            
             <div className="space-y-4">
               <AddressAutocomplete
                 value={formData.puntoRecogida}
@@ -845,14 +880,6 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                 </div>
               )}
             </div>
-
-            {mapsError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-600 text-sm">
-                  Error loading Google Maps. Please check your configuration.
-                </p>
-              </div>
-            )}
           </div>
         );
 
