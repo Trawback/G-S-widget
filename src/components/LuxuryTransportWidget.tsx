@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Mail, User, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Mail, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import AddressAutocomplete from './AddressAutocomplete';
 import RouteMap from './RouteMap';
@@ -81,7 +81,7 @@ const LuxuryTransportWidget = () => {
     phoneLocal: ''
   });
 
-  const countryCodes: { code: string; label: string }[] = [
+  const countryCodes: { code: string; label: string }[] = [ // eslint-disable-line @typescript-eslint/no-unused-vars
     { code: '+1', label: 'United States/Canada' },
     { code: '+44', label: 'United Kingdom' },
     { code: '+34', label: 'Spain' },
@@ -513,7 +513,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
             },
             body: JSON.stringify(formData),
           });
-        } catch (dbError) {
+        } catch {
           console.log('Database save failed, but email sent successfully');
         }
 
@@ -1025,10 +1025,10 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                     features: va.features ?? original.features,
                     gallery: va.gallery ?? original.gallery,
                   });
-                  setInfoVehicle(details as any);
+                  setInfoVehicle(details as VehicleDetails); // eslint-disable-line @typescript-eslint/no-explicit-any
                 }}
                 onClose={() => setInfoVehicle(null)}
-                onSelect={(v) => { handleInputChange('vehiculoSeleccionado', v as any); setInfoVehicle(null); }}
+                onSelect={(v) => { handleInputChange('vehiculoSeleccionado', v as any); setInfoVehicle(null); }} // eslint-disable-line @typescript-eslint/no-explicit-any
               />
             )}
           </div>
