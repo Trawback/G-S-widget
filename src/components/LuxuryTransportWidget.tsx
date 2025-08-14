@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Calendar, MapPin, Car, Mail, User, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Mail, User, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import AddressAutocomplete from './AddressAutocomplete';
 import RouteMap from './RouteMap';

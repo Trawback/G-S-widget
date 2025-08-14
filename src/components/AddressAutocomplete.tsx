@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { MapPin } from 'lucide-react';
 
 interface AddressAutocompleteProps {
   value: string;
-  onChange: (address: string, placeDetails?: any) => void;
+  onChange: (address: string, placeDetails?: google.maps.places.PlaceResult) => void;
   placeholder?: string;
   label?: string;
   required?: boolean;
@@ -20,26 +20,10 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
 
-  useEffect(() => {
-    // Verificar si Google Maps está cargado
-    const checkGoogleMaps = () => {
-      if (window.google && window.google.maps && window.google.maps.places) {
-        setIsGoogleMapsLoaded(true);
-        initializeAutocomplete();
-      } else {
-        // Reintentar en 100ms
-        setTimeout(checkGoogleMaps, 100);
-      }
-    };
-
-    checkGoogleMaps();
-  }, []);
-
-  const initializeAutocomplete = () => {
+  const initializeAutocomplete = useCallback(() => {
     if (!inputRef.current || !window.google) return;
 
     const options = {
-      // Allow all result types (addresses + POIs like airports)
       fields: ['place_id', 'name', 'formatted_address', 'geometry', 'types']
     } as google.maps.places.AutocompleteOptions;
 
@@ -56,7 +40,20 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         onChange(displayAddress, place);
       }
     });
-  };
+  }, [onChange]);
+
+  useEffect(() => {
+    const checkGoogleMaps = () => {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        setIsGoogleMapsLoaded(true);
+        initializeAutocomplete();
+      } else {
+        setTimeout(checkGoogleMaps, 100);
+      }
+    };
+
+    checkGoogleMaps();
+  }, [initializeAutocomplete]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
