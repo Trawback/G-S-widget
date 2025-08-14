@@ -1125,15 +1125,25 @@ Submitted by: Godandi & Sons Luxury Transport Widget
     <div className="max-w-4xl mx-auto bg-black rounded-2xl shadow-2xl overflow-hidden">
       {/* Header */}
       <div className="bg-black text-white p-4 sm:p-6">
-        <div className="flex justify-center-safe items-center-safe mb-4">
-          <Image
-            src="/logodorado (1).png"
-            alt="Logo"
-            width={120}
-            height={120}
-            priority
-            className="h-12 sm:h-16 w-auto max-w-full"
-          />
+        <div className="flex justify-between items-center mb-4">
+          <button
+            onClick={() => window.open('https://godandiandsons.com/contact', '_blank')}
+            className="p-2 rounded-full bg-white text-black hover:bg-[#ebc651]/80 transition-colors"
+            aria-label="Back to G&D and Sons"
+          >
+            ←
+          </button>
+          <div className="flex-1 flex justify-center">
+            <Image
+              src="/logodorado (1).png"
+              alt="Logo"
+              width={120}
+              height={120}
+              priority
+              className="h-12 sm:h-16 w-auto max-w-full"
+            />
+          </div>
+          <div className="w-10"></div>
         </div>
         
         {/* Progress Bar */}
