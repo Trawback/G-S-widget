@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 interface RouteMapProps {
   origin: string;
@@ -35,84 +35,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
     checkGoogleMaps();
   }, []);
 
-  useEffect(() => {
-    if (origin && destination && window.google) {
-      calculateRoute();
-    }
-  }, [origin, destination, waypoints]);
-
-  const initializeMap = () => {
-    if (!mapRef.current || !window.google) return;
-
-    // Intentar obtener la ubicación del usuario, sino usar un centro mundial
-    const defaultCenter = { lat: 20, lng: 0 }; // Centro del mundo
-    
-    mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-      zoom: 2, // Zoom más alejado para vista mundial
-      center: defaultCenter,
-      mapTypeControl: false,
-      streetViewControl: false,
-      styles: [ // Estilo elegante para el mapa
-        {
-          "featureType": "all",
-          "elementType": "geometry.fill",
-          "stylers": [{"weight": "2.00"}]
-        },
-        {
-          "featureType": "all",
-          "elementType": "geometry.stroke",
-          "stylers": [{"color": "#9c9c9c"}]
-        },
-        {
-          "featureType": "all",
-          "elementType": "labels.text",
-          "stylers": [{"visibility": "on"}]
-        }
-      ]
-    });
-
-    // Intentar centrar en la ubicación del usuario
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          mapInstanceRef.current?.setCenter(userLocation);
-          mapInstanceRef.current?.setZoom(10);
-        },
-        () => {
-          console.log('Could not get user location');
-        }
-      );
-    }
-
-    directionsServiceRef.current = new window.google.maps.DirectionsService();
-    directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
-      draggable: false,
-      panel: null,
-      polylineOptions: {
-        strokeColor: '#ebc651',
-        strokeWeight: 4,
-        strokeOpacity: 0.8
-      },
-      markerOptions: {
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          fillColor: '#ebc651',
-          fillOpacity: 1,
-          strokeColor: '#000000',
-          strokeWeight: 2,
-          scale: 8
-        }
-      }
-    });
-
-    directionsRendererRef.current?.setMap(mapInstanceRef.current);
-  };
-
-  const calculateRoute = () => {
+  const calculateRoute = useCallback(() => {
     if (!directionsServiceRef.current || !directionsRendererRef.current) return;
 
     const waypointsFormatted = waypoints
@@ -164,6 +87,84 @@ const RouteMap: React.FC<RouteMapProps> = ({
         console.error('Error calculating route:', status);
       }
     });
+  }, [origin, destination, waypoints]);
+
+  useEffect(() => {
+    if (origin && destination && window.google) {
+      calculateRoute();
+    }
+  }, [origin, destination, waypoints, calculateRoute]);
+
+
+  const initializeMap = () => {
+    if (!mapRef.current || !window.google) return;
+
+    // Intentar obtener la ubicación del usuario, sino usar un centro mundial
+    const defaultCenter = { lat: 20, lng: 0 }; // Centro del mundo
+    
+    mapInstanceRef.current = new window.google.maps.Map(mapRef.current as HTMLDivElement, {
+      zoom: 2 as number,
+      center: defaultCenter,
+      mapTypeControl: false,
+      streetViewControl: false,
+      styles: [
+        {
+          featureType: 'all',
+          elementType: 'geometry.fill',
+          stylers: [{ weight: 2 }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'geometry.stroke',
+          stylers: [{ color: '#9c9c9c' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels.text',
+          stylers: [{ visibility: 'on' }]
+        }
+      ] as google.maps.MapTypeStyle[]
+    } as google.maps.MapOptions);
+
+    // Intentar centrar en la ubicación del usuario
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          mapInstanceRef.current?.setCenter(userLocation);
+          mapInstanceRef.current?.setZoom(10);
+        },
+        () => {
+          console.log('Could not get user location');
+        }
+      );
+    }
+
+    directionsServiceRef.current = new window.google.maps.DirectionsService();
+    directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
+      draggable: false,
+      panel: undefined,
+      polylineOptions: {
+        strokeColor: '#ebc651',
+        strokeWeight: 4,
+        strokeOpacity: 0.8
+      },
+      markerOptions: {
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: '#ebc651',
+          fillOpacity: 1,
+          strokeColor: '#000000',
+          strokeWeight: 2,
+          scale: 8
+        }
+      }
+    });
+
+    directionsRendererRef.current?.setMap(mapInstanceRef.current);
   };
 
   return (

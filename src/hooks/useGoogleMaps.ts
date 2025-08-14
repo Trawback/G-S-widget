@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 declare global {
   interface Window {
-    google: any;
+    google: typeof google;
     initMap: () => void;
   }
 }
@@ -33,7 +33,7 @@ export const useGoogleMaps = () => {
     // Prevent injecting multiple scripts
     const existingScript = document.getElementById('google-maps-js') as HTMLScriptElement | null;
     if (existingScript) {
-      existingScript.addEventListener('load', () => setIsLoaded(true), { once: true } as any);
+      existingScript.addEventListener('load', () => setIsLoaded(true), { once: true } as unknown as AddEventListenerOptions);
       return;
     }
 

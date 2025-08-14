@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Mail, Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Mail, ChevronRight, ChevronLeft, X, Plus } from 'lucide-react'; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import AddressAutocomplete from './AddressAutocomplete';
 import RouteMap from './RouteMap';
@@ -58,7 +58,7 @@ const LuxuryTransportWidget = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const { isLoaded: isMapsLoaded, isError: mapsError } = useGoogleMaps();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
+  const [submitMessage, setSubmitMessage] = useState(''); // eslint-disable-line @typescript-eslint/no-unused-vars
   
   const [formData, setFormData] = useState<FormDataState>({
     // Datos del cliente
