@@ -64,8 +64,8 @@ const VehicleDetailsModal: React.FC<VehicleDetailsModalProps> = ({ vehicle, onCl
 	return (
 		<div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="vehicle-modal-title">
 			<div className="absolute inset-0 bg-black/60" onClick={onClose} />
-			<div className="relative z-10 mx-auto w-full md:max-w-3xl lg:max-w-4xl h-[92vh] md:h-auto md:max-h-[90vh] mt-auto md:mt-12 rounded-t-2xl md:rounded-2xl overflow-hidden shadow-2xl bg-black animate-[fadeIn_300ms_ease-out]">
-				<div className="relative w-full h-64 md:h-96 bg-black">
+			<div className="relative z-10 mx-auto w-full md:max-w-3xl lg:max-w-4xl h-[100svh] md:h-auto md:max-h-[90vh] mt-auto md:mt-12 rounded-t-2xl md:rounded-2xl overflow-y-auto md:overflow-hidden shadow-2xl bg-black animate-[fadeIn_300ms_ease-out]">
+				<div className="relative w-full h-56 sm:h-64 md:h-96 bg-black">
 					<Image
 						src={gallery[index]}
 						alt={vehicle.nombre}
@@ -109,7 +109,7 @@ const VehicleDetailsModal: React.FC<VehicleDetailsModalProps> = ({ vehicle, onCl
 							<button
 								type="button"
 								onClick={prevVariant}
-								className="absolute left-3 top-40 p-2 rounded-full bg-[#ebc651]/50 text-black hover:bg-[#e3bb47]"
+								className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[#ebc651]/50 text-black hover:bg-[#e3bb47]"
 								aria-label="Previous vehicle"
 							>
 								<ChevronLeft className="w-5 h-5" />
@@ -117,7 +117,7 @@ const VehicleDetailsModal: React.FC<VehicleDetailsModalProps> = ({ vehicle, onCl
 							<button
 								type="button"
 								onClick={nextVariant}
-								className="absolute right-3 top-40 p-2 rounded-full bg-[#ecb651]/50 text-black hover:bg-[#e3bb47]"
+								className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[#ecb651]/50 text-black hover:bg-[#e3bb47]"
 								aria-label="Next vehicle"
 							>
 								<ChevronRight className="w-5 h-5" />
@@ -135,7 +135,7 @@ const VehicleDetailsModal: React.FC<VehicleDetailsModalProps> = ({ vehicle, onCl
 					</button>
 				</div>
 
-				<div className="p-5 md:p-6 text-white">
+				<div className="p-5 md:p-6 pb-8 text-white">
 					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div>
 							<h3 id="vehicle-modal-title" className="text-xl md:text-2xl font-bold text-white">{vehicle.nombre}</h3>

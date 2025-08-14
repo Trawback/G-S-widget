@@ -598,7 +598,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                   defaultCountry="US"
                   value={formData.telefono}
                   onChange={(value: string | undefined) => setFormData((prev) => ({ ...prev, telefono: value || '' }))}
-                  className="w-full h-8 text-black border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full h-12 text-black border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 />
               </div>
               
@@ -799,7 +799,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                   Stops (optional)
                 </label>
                 {formData.stops.map((stop, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
+                  <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
                     <div className="flex-1">
                       <AddressAutocomplete
                         value={stop}
@@ -809,7 +809,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                     </div>
                     <button
                       onClick={() => removeStop(index)}
-                      className="p-3 text-red-500 hover:bg-red-50 rounded-lg"
+                      className="p-3 text-red-500 hover:bg-red-50 rounded-lg self-end sm:self-auto"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -840,7 +840,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                     origin={formData.puntoRecogida}
                     destination={formData.puntoDestino}
                     waypoints={formData.stops.filter(stop => stop.trim() !== '')}
-                    className="w-full h-80 rounded-lg border"
+                    className="w-full h-60 sm:h-72 md:h-80 rounded-lg border"
                   />
                 </div>
               )}
@@ -866,7 +866,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
             
             <div className={`px-2 ${currentStep === 5 ? 'text-white' : ''}`}>
               <div className="relative select-none">
-                <div className="flex justify-between gap-2">
+                <div className="flex flex-wrap justify-between gap-2">
                   {categorias.map(({ key, label, icon }) => (
                     <button
                       key={key}
@@ -923,13 +923,14 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                   }`}
                 >
                   {(() => { const variant = getActiveVariant(vehiculo); const displayImage = variant?.imagen || vehiculo.imagen; const displayName = variant ? `${vehiculo.nombre} — ${variant.name}` : vehiculo.nombre; return (
-                  <div className="relative w-full h-64 md:h-56">
+                  <div className="relative w-full">
                     <Image
                       src={displayImage}
                       alt={displayName}
-                      fill
+                      width={1600}
+                      height={900}
                       priority={true}
-                      className="object-contain bg-transparent object-center transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                      className="object-contain bg-transparent object-center w-full h-auto transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
                     <div className="absolute top-0 left-0 right-0 p-2">
@@ -1123,15 +1124,15 @@ Submitted by: Godandi & Sons Luxury Transport Widget
   return (
     <div className="max-w-4xl mx-auto bg-black rounded-2xl shadow-2xl overflow-hidden">
       {/* Header */}
-      <div className="bg-black text-white p-6">
-        <div className="flex justify-center mb-4">
+      <div className="bg-black text-white p-4 sm:p-6">
+        <div className="flex justify-center-safe items-center-safe mb-4">
           <Image
             src="/logodorado (1).png"
             alt="Logo"
             width={120}
             height={120}
             priority
-            className="h-16 w-auto"
+            className="h-12 sm:h-16 w-auto max-w-full"
           />
         </div>
         
@@ -1139,13 +1140,13 @@ Submitted by: Godandi & Sons Luxury Transport Widget
         <div className="flex items-center justify-between mb-6">
           {Array.from({ length: totalSteps }, (_, i) => (
             <div key={i} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
                 i + 1 <= currentStep ? 'bg-white text-black' : 'bg-[#ebc651] text-black'
               }`}>
                 {i + 1}
               </div>
               {i < totalSteps - 1 && (
-                <div className={`h-1 w-8 md:w-16 mx-2 ${
+                <div className={`h-1 w-4 sm:w-8 md:w-16 mx-1 sm:mx-2 ${
                   i + 1 < currentStep ? 'bg-white' : 'bg-[#ebc651]'
                 }`} />
               )}
@@ -1159,7 +1160,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
       </div>
 
       {/* Content */}
-      <div className={`p-8 transition-colors duration-700 ${currentStep === 5 ? 'bg-black' : 'bg-white'}`}>
+      <div className={`p-4 sm:p-6 md:p-8 transition-colors duration-700 ${currentStep === 5 ? 'bg-black' : 'bg-white'}`}>
         {currentStep === 5 ? (
           <div className="animate-[fadeIn_600ms_ease-out]">
             {renderStep()}
@@ -1195,11 +1196,11 @@ Submitted by: Godandi & Sons Luxury Transport Widget
       `}</style>
 
       {/* Navigation */}
-      <div className="bg-black px-8 py-6 flex justify-between">
+      <div className="bg-black px-4 sm:px-8 py-4 sm:py-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6 justify-between">
         <button
           onClick={prevStep}
           disabled={currentStep === 1}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto justify-center ${
             currentStep === 1
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
               : 'bg-black text-[#ebc651] border-2 border-[#ebc651]'
@@ -1213,7 +1214,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
           <button
             onClick={submitReservation}
             disabled={!isStepValid()}
-            className={`flex items-center gap-2 px-8 py-3 rounded-lg font-medium transition-colors ${
+            className={`flex items-center gap-2 px-8 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto justify-center ${
               isStepValid()
                 ? 'bg-[#ebc651]/70 text-black hover:bg-[#ebc651]'
                 : 'bg-black text-[#ebc651] cursor-not-allowed'
@@ -1226,7 +1227,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
           <button
             onClick={nextStep}
             disabled={!isStepValid()}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto justify-center ${
               isStepValid()
                 ? 'bg-[#ebc651]/70 text-black hover:bg-[#ebc651]'
                 : 'bg-black text-[#ebc651] cursor-not-allowed'

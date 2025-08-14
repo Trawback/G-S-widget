@@ -173,7 +173,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
       {routeInfo && (
         <div className="bg-[#ebc651]/20 p-4 rounded-lg border border-[#ebc651]">
           <h4 className="font-semibold text-black mb-2">Route Information:</h4>
-          <div className="flex gap-4 text-sm text-black">
+          <div className="flex flex-wrap gap-4 text-sm text-black">
             <span><strong>Distance:</strong> {routeInfo.distance}</span>
             <span><strong>Estimated time:</strong> {routeInfo.duration}</span>
           </div>

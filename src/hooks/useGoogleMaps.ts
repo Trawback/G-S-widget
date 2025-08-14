@@ -14,7 +14,12 @@ export const useGoogleMaps = () => {
   useEffect(() => {
     // If already loaded, do nothing
     if (window.google && window.google.maps) {
-      setIsLoaded(true);
+      if (window.google.maps.places) {
+        setIsLoaded(true);
+      } else {
+        console.warn('Google Maps loaded but places library missing. Check libraries param.');
+        setIsError(true);
+      }
       return;
     }
 
@@ -27,7 +32,12 @@ export const useGoogleMaps = () => {
 
     // Global function that Google Maps will call when ready
     window.initMap = () => {
-      setIsLoaded(true);
+      if (window.google && window.google.maps && window.google.maps.places) {
+        setIsLoaded(true);
+      } else {
+        console.warn('Google Maps callback fired but places library not available.');
+        setIsError(true);
+      }
     };
 
     // Prevent injecting multiple scripts
@@ -40,19 +50,22 @@ export const useGoogleMaps = () => {
     // Create the script to load Google Maps
     const script = document.createElement('script');
     script.id = 'google-maps-js';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap&v=weekly&loading=async`;
     script.async = true;
     script.defer = true;
 
     script.onload = () => {
-      if (window.google && window.google.maps) {
+      if (window.google && window.google.maps && window.google.maps.places) {
         setIsLoaded(true);
+      } else {
+        console.warn('Google Maps script loaded but window.google.maps.places is undefined.');
+        setIsError(true);
       }
     };
     
-    script.onerror = () => {
+    script.onerror = (e) => {
       setIsError(true);
-      console.error('Error loading Google Maps');
+      console.error('Error loading Google Maps script. Check API key, billing, enabled APIs, and referrer restrictions.', e);
     };
 
     document.head.appendChild(script);
