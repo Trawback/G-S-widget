@@ -135,12 +135,23 @@ export async function POST(req: NextRequest) {
                         </tr>
                       </table>
 
-                      <div style="background-color:#f8f9fa;border:2px solid #ebc651;border-radius:10px;padding:20px;margin-bottom:25px;text-align:center;">
-                        <h3 style="margin:0 0 15px 0;color:#000000;font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;">Route Information</h3>
-                        <p style="margin:8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Pickup:</strong> ${data?.puntoRecogida ?? ''}</p>
-                        ${data?.stops && data.stops.length > 0 ? `<p style="margin:8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Stops:</strong> ${data.stops.join(', ')}</p>` : ''}
-                        <p style="margin:8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Drop-off:</strong> ${data?.puntoDestino ?? ''}</p>
-                      </div>
+                                             <div style="background-color:#f8f9fa;border:2px solid #ebc651;border-radius:10px;padding:20px;margin-bottom:25px;text-align:center;">
+                         <h3 style="margin:0 0 15px 0;color:#000000;font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;">Route Information</h3>
+                         <div style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-bottom:15px;">
+                           <p style="margin:8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Pickup Address:</strong></p>
+                           <p style="margin:4px 0;color:#374151;font-size:14px;word-wrap:break-word;">${data?.puntoRecogida ?? ''}</p>
+                         </div>
+                         ${data?.stops && data.stops.length > 0 ? `
+                         <div style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-bottom:15px;">
+                           <p style="margin:8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Stops:</strong></p>
+                           <p style="margin:4px 0;color:#374151;font-size:14px;word-wrap:break-word;">${data.stops.join(', ')}</p>
+                         </div>
+                         ` : ''}
+                         <div style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:15px;">
+                           <p style="margin:8px 0;color:#374151;font-size:14px;"><strong style="color:#ebc651;">Drop-off Address:</strong></p>
+                           <p style="margin:4px 0;color:#374151;font-size:14px;word-wrap:break-word;">${data?.puntoDestino ?? ''}</p>
+                         </div>
+                       </div>
 
                       <div style="background-color:#f8f9fa;border:2px solid #ebc651;border-radius:10px;padding:20px;margin-bottom:25px;text-align:center;">
                         <h3 style="margin:0 0 15px 0;color:#000000;font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;">Selected Vehicle</h3>
@@ -152,7 +163,6 @@ export async function POST(req: NextRequest) {
                         <p style="margin:8px 0;color:#000000;font-size:18px;font-weight:bold;">${data?.vehiculoSeleccionado?.nombre ?? ''}</p>
                         <p style="margin:8px 0;color:#6b7280;font-size:14px;">${data?.vehiculoSeleccionado?.capacidad ?? ''}</p>
                         ${data?.vehiculoSeleccionado?.descripcion ? `<p style="margin:8px 0;color:#6b7280;font-size:14px;">${data.vehiculoSeleccionado.descripcion}</p>` : ''}
-                        <p style="margin:15px 0 8px 0;color:#ebc651;font-size:20px;font-weight:bold;text-transform:uppercase;">${data?.vehiculoSeleccionado?.precio ?? ''}</p>
                         ${features ? `<p style="margin:8px 0;color:#6b7280;font-size:14px;"><strong style="color:#ebc651;">Features:</strong> ${features}</p>` : ''}
                       </div>
 
