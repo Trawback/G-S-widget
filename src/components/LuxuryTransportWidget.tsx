@@ -59,6 +59,7 @@ const LuxuryTransportWidget = () => {
   const { isLoaded: isMapsLoaded, isError: mapsError } = useGoogleMaps();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState(''); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
   
   const [formData, setFormData] = useState<FormDataState>({
     // Datos del cliente
@@ -408,7 +409,7 @@ VEHICLE SELECTED:
 • Vehicle: ${vehicleDisplay}
 • Capacity: ${formData.vehiculoSeleccionado?.capacidad}
 • Features: ${formData.vehiculoSeleccionado?.features.join(', ')}
-• Price: ${formData.vehiculoSeleccionado?.precio}
+// • Price: ${formData.vehiculoSeleccionado?.precio} 
 
 ---
 Request submitted on: ${new Date().toLocaleString()}
@@ -499,7 +500,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          summary: summary,
+          formData: formData,
           userEmail: formData.email,
           subject: `New Luxury Transport Reservation - ${formData.nombre}`,
           clientName: formData.nombre
@@ -1157,6 +1158,185 @@ Submitted by: Godandi & Sons Luxury Transport Widget
     return v.variants.find(va => va.id === sel) || v.variants[0];
   };
 
+  const generateEmailHTML = () => {
+    const variant = getActiveVariant(formData.vehiculoSeleccionado as Vehiculo);
+    const vehicleDisplay = variant 
+      ? `${formData.vehiculoSeleccionado?.nombre} - ${variant.name}`
+      : formData.vehiculoSeleccionado?.nombre;
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Luxury Chauffeur Service Reservation</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+    .logo {
+      max-width: 150px;
+      height: auto;
+    }
+    .content {
+      padding: 20px 0;
+    }
+    .section {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px dashed #eee;
+    }
+    .section:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .section-title {
+      color: #555;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+    }
+    .info-item {
+      margin-bottom: 5px;
+    }
+    .info-item strong {
+      font-weight: bold;
+    }
+    .vehicle-details {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+    .vehicle-name {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #333;
+    }
+    .vehicle-capacity {
+      font-size: 0.9em;
+      color: #666;
+    }
+    .features-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .features-list li {
+      margin-bottom: 5px;
+      color: #555;
+    }
+    .features-list li strong {
+      font-weight: bold;
+    }
+    /* .price {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ebc651;
+      margin-top: 10px;
+    } */
+    .footer {
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      font-size: 0.9em;
+      color: #888;
+    }
+    .footer a {
+      color: #ebc651;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://godandiandsons.com/logodorado.png" alt="Godandi & Sons Logo" class="logo">
+    </div>
+    <div class="content">
+      <div class="section">
+        <h2 class="section-title">Reservation Details</h2>
+        <div class="info-item">
+          <strong>Name:</strong> ${formData.nombre}
+        </div>
+        <div class="info-item">
+          <strong>Phone:</strong> ${formData.telefono}
+        </div>
+        <div class="info-item">
+          <strong>Email:</strong> ${formData.email}
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Service Details</h2>
+        <div class="info-item">
+          <strong>Service Type:</strong> ${formData.tipoServicio}${formData.tipoServicio === 'Hourly' ? ` (${formData.hourlyHours} hours)` : ''}
+        </div>
+        <div class="info-item">
+          <strong>Date:</strong> ${formData.fecha}
+        </div>
+        <div class="info-item">
+          <strong>Time:</strong> ${formData.hora}
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Route Information</h2>
+        <div class="info-item">
+          <strong>Pickup:</strong> ${formData.puntoRecogida}
+        </div>
+        ${formData.stops.length > 0 ? `
+        <div class="info-item">
+          <strong>Stights:</strong> ${formData.stops.join(', ')}
+        </div>
+        ` : ''}
+        <div class="info-item">
+          <strong>Drop-off:</strong> ${formData.puntoDestino}
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Vehicle Selected</h2>
+        <div class="vehicle-details">
+          <div class="vehicle-name">${vehicleDisplay}</div>
+          <div class="vehicle-capacity">${formData.vehiculoSeleccionado?.capacidad}</div>
+          <div class="features-list">
+            ${formData.vehiculoSeleccionado?.features?.map(feature => `<li><strong>${feature}:</strong> Yes</li>`).join('') || ''}
+          </div>
+          <!-- <div class="">${formData.vehiculoSeleccionado?.precio}</div> -->    
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <p>This email was sent from Godandi & Sons Luxury Transport Widget.</p>
+      <p>If you did not make this reservation, please ignore this email.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `.trim();
+  };
+
   return (
     <div className="max-w-4xl mx-auto bg-black rounded-2xl shadow-2xl overflow-hidden">
       {/* Header */}
@@ -1232,6 +1412,54 @@ Submitted by: Godandi & Sons Luxury Transport Widget
             </div>
           </div>
         )}
+
+        {/* Email Preview Modal */}
+        {showEmailPreview && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+              <div className="bg-black text-white p-4 flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Email Preview</h3>
+                <button
+                  onClick={() => setShowEmailPreview(false)}
+                  className="text-white hover:text-gray-300"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-2">Email Details:</h4>
+                  <p className="text-sm text-gray-600"><strong>To:</strong> {formData.email}</p>
+                  <p className="text-sm text-gray-600"><strong>Subject:</strong> ✅ Reservation Confirmed - Godandi & Sons Luxury Chauffeur</p>
+                </div>
+                <div 
+                  className="border rounded-lg p-4"
+                  dangerouslySetInnerHTML={{ 
+                    __html: generateEmailHTML() 
+                  }}
+                />
+              </div>
+              <div className="bg-gray-50 p-4 flex justify-end gap-3">
+                <button
+                  onClick={() => setShowEmailPreview(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEmailPreview(false);
+                    submitReservation();
+                  }}
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-[#ebc651] text-black rounded-lg hover:bg-[#ebc651]/80 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Reservation'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <style jsx global>{`
@@ -1261,7 +1489,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
             onClick={() => {
               console.log('Get a quote button clicked!');
               console.log('Button should be enabled:', isStepValid());
-              submitReservation();
+              setShowEmailPreview(true);
             }}
             disabled={!isStepValid()}
             className={`flex items-center gap-2 px-8 py-3 rounded-lg font-medium transition-colors w-full sm:w-auto justify-center ${
@@ -1271,7 +1499,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
             }`}
           >
             <Mail className="w-5 h-5" />
-            Get a quote
+            Preview & Send
           </button>
         ) : (
           <button
