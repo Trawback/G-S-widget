@@ -1246,7 +1246,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
     .features-list li strong {
       font-weight: bold;
     }
-    /* .price {
+    /* .price {     //removed price from email
       font-size: 1.2em;
       font-weight: bold;
       color: #ebc651;
