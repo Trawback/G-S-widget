@@ -99,6 +99,13 @@ export async function POST(req: NextRequest) {
     const { summary, userEmail, subject, clientName, formData } = body || {};
 
     // 1) Base público de assets (usa el dominio que SÍ sirve /public)
+    const host = req.headers.get('host') || '';
+    const isLocal = host.includes('localhost') || host.startsWith('127.');
+    const fallbackBase = `${isLocal ? 'http' : 'https'}://${host}`;
+    const ASSETS_BASE = process.env.NEXT_PUBLIC_ASSETS_URL || fallbackBase;
+
+    const logoAbs = makeAbsolute('/Logo_icon.png', ASSETS_BASE);
+    const carAbs = makeAbsolute(formData?.vehiculoSeleccionado?.imagen, ASSETS_BASE);
 
     // 2) Transporter (Gmail + App Password)
     const transporter = nodemailer.createTransport({
@@ -108,12 +115,6 @@ export async function POST(req: NextRequest) {
         pass: process.env.GMAIL_APP_PASSWORD,
       },
     });
-
-    // ---------- Base URL para assets ----------
-    const host = req.headers.get('host') || '';
-    const isLocal = host.includes('localhost') || host.startsWith('127.');
-    const protocol = isLocal ? 'http' : 'https';
-    const baseUrl = `${protocol}://${host}`;
 
     // ---------- Normalización de direcciones ----------
     // Soportamos:
@@ -127,8 +128,8 @@ export async function POST(req: NextRequest) {
         : (formData?.stops || []).map(s => normalizePlace(s)!)
       ).filter(Boolean) as PlaceSelection[];
 
-    // 3) HTML con direcciones resueltas + links
-    const buildSummaryHTML = (data: ReservationData | undefined, baseUrl: string, fallbackSummary?: string): string => {
+    // 3) HTML con CID (logo/car) y direcciones resueltas + links
+    const buildSummaryHTML = (data: ReservationData | undefined, fallbackSummary?: string): string => {
       if (!data) {
         return `<pre style="white-space:pre-wrap;font-family:Arial,sans-serif;background:#f8f9fa;padding:20px;border-radius:8px;">${fallbackSummary ?? 'No details provided'}</pre>`;
       }
@@ -148,7 +149,7 @@ export async function POST(req: NextRequest) {
                 <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;background-color:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
                   <tr>
                     <td style="background-color:#000000;padding:30px 25px;text-align:center;">
-                      <img src="${baseUrl}/Logo_icon.png" alt="Godandi & Sons" style="height:60px;display:block;margin:0 auto 15px auto;border-radius:8px;" />
+                      <img src="cid:logo" alt="Godandi & Sons" style="height:60px;display:block;margin:0 auto 15px auto;border-radius:8px;" />
                       <h1 style="margin:0;color:#ebc651;font-size:24px;font-weight:bold;letter-spacing:.5px;">Quote confirmation</h1>
                       <div style="margin:15px 0;color:#d1d5db;font-size:12px;line-height:1.4;">
                         <p style="margin:5px 0;color:#ebc651;font-weight:500;">215 Lorenzo Boturini Transito Ciudad de México 06820 MX</p>
@@ -222,11 +223,10 @@ export async function POST(req: NextRequest) {
                       <!-- Selected Vehicle -->
                       <div style="background-color:#f8f9fa;border:2px solid #ebc651;border-radius:10px;padding:20px;margin-bottom:25px;text-align:center;">
                         <h3 style="margin:0 0 15px 0;color:#000000;font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;">Selected Vehicle</h3>
-                        ${data?.vehiculoSeleccionado?.imagen ? `
-                        <div style="margin-bottom:20px;">
-                          <img src="${baseUrl}${data.vehiculoSeleccionado.imagen}" alt="${data?.vehiculoSeleccionado?.nombre ?? 'Vehicle'}" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
-                          <p style="margin:8px 0;color:#6b7280;font-size:12px;font-style:italic;">Vehicle Image: ${data.vehiculoSeleccionado.imagen}</p>
-                        </div>
+                        ${carAbs ? `
+                          <div style="margin-bottom:20px;">
+                            <img src="cid:car" alt="${data?.vehiculoSeleccionado?.nombre ?? 'Vehicle'}" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
+                          </div>
                         ` : ''}
                         <p style="margin:8px 0;color:#000000;font-size:18px;font-weight:bold;">${data?.vehiculoSeleccionado?.nombre ?? ''}</p>
                         <p style="margin:8px 0;color:#6b7280;font-size:14px;">${data?.vehiculoSeleccionado?.capacidad ?? ''}</p>
@@ -240,7 +240,7 @@ export async function POST(req: NextRequest) {
 
                   <tr>
                     <td style="background-color:#000000;padding:20px 25px;text-align:center;color:#9ca3af;">
-                      <img src="${baseUrl}/Logo_icon.png" alt="Godandi & Sons" style="height:30px;display:block;margin:0 auto 10px auto;opacity:.9;border-radius:6px;" />
+                      <img src="cid:logo" alt="Godandi & Sons" style="height:30px;display:block;margin:0 auto 10px auto;opacity:.9;border-radius:6px;" />
                       <p style="margin:8px 0 0 0;font-size:14px;font-weight:500;">Godandi & Sons</p>
                       <p style="margin:5px 0 0 0;font-size:12px;color:#ebc651;font-style:italic;">Discreet. Punctual. Tailored.</p>
                     </td>
@@ -261,44 +261,34 @@ export async function POST(req: NextRequest) {
     }
 
     const html: string = formData
-      ? buildSummaryHTML(formData, baseUrl)
+      ? buildSummaryHTML(formData)
       : `<pre style="white-space:pre-wrap;font-family:Arial,sans-serif;background:#f8f9fa;padding:20px;border-radius:8px;">${summary ?? 'Reservation details not available'}</pre>`;
 
     const emailSubject: string = subject || `New Luxury Transport Reservation - ${clientName ?? formData?.nombre ?? ''}`;
 
+    // 4) Adjuntos inline (CID). Nodemailer acepta URL pública en "path".
+    const attachments = [
+      logoAbs ? { filename: 'logo.png', path: logoAbs, cid: 'logo' } : undefined,
+      carAbs ? { filename: 'vehicle.png', path: carAbs, cid: 'car' } : undefined,
+    ].filter(Boolean) as Array<{ filename: string; path: string; cid: string }>;
+
     // 5) Enviar (cliente)
-    console.log('Sending email to client:', clientTo);
-    console.log('Email HTML length:', html.length);
-    
-    try {
-      await transporter.sendMail({
-        from: process.env.GMAIL_USER,
-        to: clientTo,
-        subject: '✅ Quote confirmation - Godandi & Sons',
-        html,
-      });
-      console.log('✅ Email sent to client successfully');
-    } catch (error) {
-      console.error('❌ Error sending email to client:', error);
-      throw error;
-    }
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: clientTo,
+      subject: '✅ Quote confirmation - Godandi & Sons',
+      html,
+      attachments,
+    });
 
     // 6) Enviar (admin)
-    const adminEmail = process.env.ADMIN_EMAIL || process.env.GMAIL_USER;
-    console.log('Sending email to admin:', adminEmail);
-    
-    try {
-      await transporter.sendMail({
-        from: process.env.GMAIL_USER,
-        to: adminEmail,
-        subject: emailSubject,
-        html,
-      });
-      console.log('✅ Email sent to admin successfully');
-    } catch (error) {
-      console.error('❌ Error sending email to admin:', error);
-      throw error;
-    }
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: process.env.ADMIN_EMAIL || process.env.GMAIL_USER,
+      subject: emailSubject,
+      html,
+      attachments,
+    });
 
     return NextResponse.json({ success: true, message: 'Emails sent' });
   } catch (err: unknown) {

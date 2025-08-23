@@ -14,7 +14,7 @@ export const useGoogleMaps = () => {
   useEffect(() => {
     // If already loaded, do nothing
     if (window.google && window.google.maps && window.google.maps.places) {
-      setIsLoaded(true);
+        setIsLoaded(true);
       return;
     }
 
@@ -30,17 +30,17 @@ export const useGoogleMaps = () => {
       console.log('Google Maps callback fired');
       // Wait a bit for the libraries to fully load
       setTimeout(() => {
-        if (window.google && window.google.maps && window.google.maps.places) {
+      if (window.google && window.google.maps && window.google.maps.places) {
           console.log('Google Maps and Places library loaded successfully');
-          setIsLoaded(true);
+        setIsLoaded(true);
           setIsError(false);
-        } else {
-          console.warn('Google Maps callback fired but places library not available.');
+      } else {
+        console.warn('Google Maps callback fired but places library not available.');
           console.log('Google object:', !!window.google);
           console.log('Maps object:', !!(window.google && window.google.maps));
           console.log('Places library:', !!(window.google && window.google.maps && window.google.maps.places));
-          setIsError(true);
-        }
+        setIsError(true);
+      }
       }, 500); // Increased timeout to 500ms
     };
 
@@ -67,7 +67,7 @@ export const useGoogleMaps = () => {
     }
 
     console.log('Loading Google Maps script...');
-    
+
     // Create the script to load Google Maps
     const script = document.createElement('script');
     script.id = 'google-maps-js';
