@@ -99,13 +99,6 @@ export async function POST(req: NextRequest) {
     const { summary, userEmail, subject, clientName, formData } = body || {};
 
     // 1) Base público de assets (usa el dominio que SÍ sirve /public)
-    const host = req.headers.get('host') || '';
-    const isLocal = host.includes('localhost') || host.startsWith('127.');
-    const fallbackBase = `${isLocal ? 'http' : 'https'}://${host}`;
-    const ASSETS_BASE = process.env.NEXT_PUBLIC_ASSETS_URL || fallbackBase;
-
-    const logoAbs = makeAbsolute('/Logo_icon.png', ASSETS_BASE);
-    const carAbs = makeAbsolute(formData?.vehiculoSeleccionado?.imagen, ASSETS_BASE);
 
     // 2) Transporter (Gmail + App Password)
     const transporter = nodemailer.createTransport({
@@ -115,6 +108,12 @@ export async function POST(req: NextRequest) {
         pass: process.env.GMAIL_APP_PASSWORD,
       },
     });
+
+    // ---------- Base URL para assets ----------
+    const host = req.headers.get('host') || '';
+    const isLocal = host.includes('localhost') || host.startsWith('127.');
+    const protocol = isLocal ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
 
     // ---------- Normalización de direcciones ----------
     // Soportamos:
@@ -128,8 +127,8 @@ export async function POST(req: NextRequest) {
         : (formData?.stops || []).map(s => normalizePlace(s)!)
       ).filter(Boolean) as PlaceSelection[];
 
-    // 3) HTML con CID (logo/car) y direcciones resueltas + links
-    const buildSummaryHTML = (data: ReservationData | undefined, fallbackSummary?: string): string => {
+    // 3) HTML con direcciones resueltas + links
+    const buildSummaryHTML = (data: ReservationData | undefined, baseUrl: string, fallbackSummary?: string): string => {
       if (!data) {
         return `<pre style="white-space:pre-wrap;font-family:Arial,sans-serif;background:#f8f9fa;padding:20px;border-radius:8px;">${fallbackSummary ?? 'No details provided'}</pre>`;
       }
@@ -262,26 +261,44 @@ export async function POST(req: NextRequest) {
     }
 
     const html: string = formData
-      ? buildSummaryHTML(formData)
+      ? buildSummaryHTML(formData, baseUrl)
       : `<pre style="white-space:pre-wrap;font-family:Arial,sans-serif;background:#f8f9fa;padding:20px;border-radius:8px;">${summary ?? 'Reservation details not available'}</pre>`;
 
     const emailSubject: string = subject || `New Luxury Transport Reservation - ${clientName ?? formData?.nombre ?? ''}`;
 
     // 5) Enviar (cliente)
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: clientTo,
-      subject: '✅ Quote confirmation - Godandi & Sons',
-      html,
-    });
+    console.log('Sending email to client:', clientTo);
+    console.log('Email HTML length:', html.length);
+    
+    try {
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: clientTo,
+        subject: '✅ Quote confirmation - Godandi & Sons',
+        html,
+      });
+      console.log('✅ Email sent to client successfully');
+    } catch (error) {
+      console.error('❌ Error sending email to client:', error);
+      throw error;
+    }
 
     // 6) Enviar (admin)
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: process.env.ADMIN_EMAIL || process.env.GMAIL_USER,
-      subject: emailSubject,
-      html,
-    });
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.GMAIL_USER;
+    console.log('Sending email to admin:', adminEmail);
+    
+    try {
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: adminEmail,
+        subject: emailSubject,
+        html,
+      });
+      console.log('✅ Email sent to admin successfully');
+    } catch (error) {
+      console.error('❌ Error sending email to admin:', error);
+      throw error;
+    }
 
     return NextResponse.json({ success: true, message: 'Emails sent' });
   } catch (err: unknown) {
