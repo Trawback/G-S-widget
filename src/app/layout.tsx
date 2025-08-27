@@ -15,6 +15,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Booking Godandi&Sons",
   description: "Booking Godandi&Sons",
+  icons: {
+    icon: [
+      { url: '/icon.png', type: 'image/png' },
+      { url: '/Logo_icon.png', type: 'image/png' }
+    ],
+    shortcut: '/Logo_icon.png',
+    apple: '/Logo_icon.png',
+  },
 };
 
 export const viewport: Viewport = {
