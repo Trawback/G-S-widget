@@ -516,15 +516,33 @@ Submitted by: Godandi & Sons Luxury Transport Widget
         
         // Opcional: También guardar en base de datos si tienes API de reservas
         try {
-          await fetch('/api/reservas', {
+          // Send to Airtable via quotes API
+          const quotesResponse = await fetch('/api/quotes', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify({
+              passengerName: formData.nombre,
+              phone: formData.telefono,
+              email: formData.email,
+              serviceType: formData.tipoServicio,
+              date: formData.fecha,
+              hour: formData.hora,
+              pickup: formData.puntoRecogida,
+              dropoff: formData.puntoDestino,
+              vehicleType: formData.vehiculoSeleccionado?.nombre || '',
+              stops: formData.stops.join(', ') || ''
+            }),
           });
-        } catch {
-          console.log('Database save failed, but email sent successfully');
+          
+          if (quotesResponse.ok) {
+            console.log('Data sent to Airtable successfully');
+          } else {
+            console.log('Failed to send data to Airtable');
+          }
+        } catch (error) {
+          console.log('Airtable save failed, but email sent successfully:', error);
         }
 
         // Reset form después de 3 segundos
@@ -1109,11 +1127,11 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                 <h3 className="font-semibold text-gray-800 mb-2">Routing</h3>
                 <p className="text-sm text-black">
                   <strong>Pickup:</strong> {formData.puntoRecogida}<br />
-                  {formData.stops.length > 0 && (
-                    <>
-                      <strong>Stops:</strong> {formData.stops.join(', ')}<br />
-                    </>
-                  )}
+                                      {formData.stops.length > 0 && (
+                      <>
+                        <strong>Stops:</strong> {formData.stops.join(', ')}<br />
+                      </>
+                    )}
                   <strong>Drop-off:</strong> {formData.puntoDestino}
                 </p>
               </div>
