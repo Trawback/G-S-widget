@@ -445,7 +445,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
         body: JSON.stringify({
           formData: formData,
           userEmail: formData.email,
-          subject: `New Luxury Transport Reservation - ${formData.nombre}`,
+          subject: `New Luxury Transport Quote - ${formData.nombre}`,
           clientName: formData.nombre
         }),
       });
@@ -455,7 +455,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
       console.log('Email result:', emailResult);
 
       if (emailResponse.ok) {
-        setSubmitMessage('✅ Your reservation has been sent successfully! We will contact you soon with your quote.');
+        setSubmitMessage('✅ Your quote has been sent successfully! We will contact you soon with your quote.');
         
         // Opcional: También guardar en base de datos si tienes API de reservas
         try {
@@ -514,12 +514,12 @@ Submitted by: Godandi & Sons Luxury Transport Widget
         }, 3000);
 
       } else {
-        setSubmitMessage('❌ Error sending reservation: ' + emailResult.message);
+        setSubmitMessage('❌ Error sending quote: ' + emailResult.message);
       }
 
     } catch (error) {
       console.error('Error in submitReservation:', error);
-      setSubmitMessage('❌ Error sending reservation. Please try again.');
+      setSubmitMessage('❌ Error sending quote. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -546,7 +546,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Book Your Luxury Chauffeur Service</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Quote your next trip</h2>
               <p className="text-gray-600">Discreet. Punctual. Tailored by Godandi & Sons.</p>
             </div>
             
@@ -778,7 +778,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                     ) : 'No time selected'}
                   </p>
                   <div className="mt-4 text-xs text-gray-600">
-                    Tip: You can adjust your selection any time before confirming the reservation.
+                    Tip: You can adjust your selection any time before confirming the Quote.
                   </div>
                 </div>
               </div>
@@ -1075,7 +1075,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Reservation Summary</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Quote Summary</h2>
               <p className="text-gray-600">Please review the information before confirming</p>
             </div>
             
@@ -1176,7 +1176,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Luxury Chauffeur Service Reservation</title>
+  <title>Quote confirmation</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -1344,7 +1344,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
     </div>
     <div class="footer">
       <p>This email was sent from Godandi & Sons Luxury Transport Widget.</p>
-      <p>If you did not make this reservation, please ignore this email.</p>
+      <p>If you did not make this Quote, please ignore this email.</p>
     </div>
   </div>
 </body>
@@ -1445,7 +1445,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                 <div className="mb-4 p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-semibold text-gray-800 mb-2">Email Details:</h4>
                   <p className="text-sm text-gray-600"><strong>To:</strong> {formData.email}</p>
-                  <p className="text-sm text-gray-600"><strong>Subject:</strong> ✅ Reservation Confirmed - Godandi & Sons Luxury Chauffeur</p>
+                  <p className="text-sm text-gray-600"><strong>Subject:</strong> ✅ Quote Confirmed - Godandi & Sons</p>
                 </div>
                 <div 
                   className="border rounded-lg p-4"
@@ -1469,7 +1469,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                   disabled={isSubmitting}
                   className="px-6 py-2 bg-[#ebc651] text-black rounded-lg hover:bg-[#ebc651]/80 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Sending...' : 'Send Reservation'}
+                  {isSubmitting ? 'Sending...' : 'Send Quote'}
                 </button>
               </div>
             </div>
