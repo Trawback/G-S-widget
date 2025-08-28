@@ -24,3 +24,8 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom gold color for branding */
+.text-gold-400 {
+  color: #fbbf24;
+}
