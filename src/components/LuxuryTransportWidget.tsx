@@ -52,6 +52,8 @@ type FormDataState = {
   vehiculoSeleccionado: Vehiculo | null;
   phoneCountryCode: string;
   phoneLocal: string;
+  airline: string;
+  flightNumber: string;
 };
 
 const LuxuryTransportWidget = () => {
@@ -79,7 +81,9 @@ const LuxuryTransportWidget = () => {
     // Vehículo
     vehiculoSeleccionado: null,
     phoneCountryCode: '+1',
-    phoneLocal: ''
+    phoneLocal: '',
+    airline: '',
+    flightNumber: ''
   });
 
   const countryCodes: { code: string; label: string }[] = [ // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -100,8 +104,7 @@ const LuxuryTransportWidget = () => {
     { key: 'SUV', label: 'SUV', icon: '' },
     { key: 'Sprinter', label: 'Sprinter', icon: '' },
     { key: 'Van', label: 'Van', icon: '' },
-    { key: 'Bus', label: 'Bus', icon: '' },
-    { key: 'Electric', label: 'Electric', icon: '' }
+    { key: 'Bus', label: 'Bus', icon: '' }
   ];
   const [selectedCategory, setSelectedCategory] = useState<Vehiculo['categoria']>('Sedan');
   const [infoVehicle, setInfoVehicle] = useState<Vehiculo | null>(null);
@@ -148,22 +151,6 @@ const LuxuryTransportWidget = () => {
         engine: '3.0L Inline-6 Turbo + EQ Boost',
         fuelEfficiency: '22/29 MPG (city/hwy)',
         gallery: ['/g&s_S450.jpg']
-      },
-      {
-        id: 3,
-        nombre: 'Premium SUV',
-        capacidad: '1-5 passengers',
-        descripcion: 'Ford Expedition',
-        precio: 'From $200/hour',
-        imagen: '/g&s_explorer.jpg',
-        categoria: 'SUV',
-        features: ['Air Suspension', 'Captain Chairs', 'Premium Audio', 'Armored (MB3+)'],
-        make: 'Ford',
-        model: 'Explorer',
-        year: 2024,
-        engine: '6.2L V8',
-        fuelEfficiency: '14/19 MPG (city/hwy)',
-        gallery: ['/g&s_explorer.jpg']
       },
     {
       id: 4,
@@ -250,18 +237,6 @@ const LuxuryTransportWidget = () => {
           fuelEfficiency: '15/20 MPG',
           features: ['Captain Chairs', 'Premium Audio'],
           gallery: ['/g&s_escalade.jpg']
-        },
-        {
-          id: 'Mercedes GLS',
-          name: '',
-          imagen: '/g&s_450SUV.jpg',
-          make: 'Mercedes-Benz',
-          model: 'GLS',
-          year: 2024,
-          engine: '6.2L V8',
-          fuelEfficiency: '14/19 MPG',
-          features: ['Air Suspension', 'Premium Audio'],
-          gallery: ['/g&s_450SUV.jpg']
         }
       ]
     },
@@ -299,7 +274,7 @@ const LuxuryTransportWidget = () => {
       },
     {
       id: 10,
-      nombre: 'Mini Bus',
+      nombre: 'Luxury Bus',
       capacidad: '1-24 passengers',
       descripcion: 'Luxury Mini Coach',
       precio: 'From $350/hour',
@@ -312,22 +287,6 @@ const LuxuryTransportWidget = () => {
       engine: '12.0L Diesel',
       fuelEfficiency: 'N/A',
       gallery: ['/g&s_irizar.jpg', '/g&s_hyace.jpg']
-    },
-    {
-      id: 11,
-      nombre: 'Electric Sedan',
-      capacidad: '1-4 passengers',
-      descripcion: 'Tesla Model S, Mercedes EQS',
-      precio: 'From $180/hour',
-      imagen: '/g&s_lyriq.jpg',
-      categoria: 'Electric',
-      features: ['Zero Emissions', 'Autopilot', 'Premium Sound'],
-      make: 'Cadillac',
-      model: 'Lyriq',
-      year: 2024,
-      engine: 'Dual-Motor EV',
-      fuelEfficiency: '95 MPGe combined',
-      gallery: ['/g&s_lyriq.jpg', '/g&s_xc40.jpg']
     },
     {
         id: 12,
@@ -360,23 +319,7 @@ const LuxuryTransportWidget = () => {
         engine: '2.0L Turbo Diesel',
         fuelEfficiency: '22 MPG combined',
         gallery: ['/g&s_odyssey.jpg']
-      },
-      {
-        id: 14,
-        nombre: 'Electric SUV',
-        capacidad: '1-4 passengers',
-        descripcion: 'Volvo XC40',
-        precio: 'From $250/hour',
-        imagen: '/g&s_xc40.jpg',
-        categoria: 'Electric',
-        features: ['High Roof', 'Luggage Space', 'USB Power'],
-        make: 'Volvo',
-        model: 'XC40',
-        year: 2024,
-        engine: '2.0L Turbo Diesel',
-        fuelEfficiency: '22 MPG combined',
-        gallery: ['/g&s_xc40.jpg']
-      },
+      }
   ];
 
   const totalSteps = 6;
@@ -532,7 +475,9 @@ Submitted by: Godandi & Sons Luxury Transport Widget
               pickup: formData.puntoRecogida,
               dropoff: formData.puntoDestino,
               vehicleType: formData.vehiculoSeleccionado?.nombre || '',
-              stops: formData.stops.join(', ') || ''
+              stops: formData.stops.join(', ') || '',
+              airline: formData.airline || '',
+              flightNumber: formData.flightNumber || ''
             }),
           });
           
@@ -560,7 +505,9 @@ Submitted by: Godandi & Sons Luxury Transport Widget
             puntoDestino: '',
             vehiculoSeleccionado: null,
             phoneCountryCode: '+1',
-            phoneLocal: ''
+            phoneLocal: '',
+            airline: '',
+            flightNumber: ''
           });
           setCurrentStep(1);
           setSubmitMessage('');
@@ -721,6 +668,40 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                   >
                     +
                   </button>
+                </div>
+              </div>
+            )}
+
+            {(formData.tipoServicio === 'Airport Arrival' || formData.tipoServicio === 'Airport Departure') && (
+              <div className="mt-4 p-4 border border-[#ebc651] rounded-lg bg-[#ebc651]/20">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">
+                  Flight Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Airline*
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.airline}
+                      onChange={(e) => handleInputChange('airline', e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ebc651] focus:border-transparent text-black"
+                      placeholder="e.g., American Airlines, Delta"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Flight Number*
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.flightNumber}
+                      onChange={(e) => handleInputChange('flightNumber', e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ebc651] focus:border-transparent text-black"
+                      placeholder="e.g., AA123, DL456"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -1114,6 +1095,14 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                   {formData.tipoServicio ?? ''}
                   {formData.tipoServicio === 'Hourly' && ` (${formData.hourlyHours} hours)`}
                 </p>
+                {(formData.tipoServicio === 'Airport Arrival' || formData.tipoServicio === 'Airport Departure') && (
+                  <div className="mt-2 p-3 bg-white rounded-lg border border-gray-200">
+                    <p className="text-sm text-black">
+                      <strong>Airline:</strong> {formData.airline || 'Not specified'}<br />
+                      <strong>Flight Number:</strong> {formData.flightNumber || 'Not specified'}
+                    </p>
+                  </div>
+                )}
               </div>
               
               <div className="border-b border-gray-200 pb-4">
@@ -1127,11 +1116,11 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                 <h3 className="font-semibold text-gray-800 mb-2">Routing</h3>
                 <p className="text-sm text-black">
                   <strong>Pickup:</strong> {formData.puntoRecogida}<br />
-                                      {formData.stops.length > 0 && (
-                      <>
-                        <strong>Stops:</strong> {formData.stops.join(', ')}<br />
-                      </>
-                    )}
+                                                                              {formData.stops.length > 0 && (
+                        <>
+                          <strong>Stops:</strong> {formData.stops.join(', ')}<br />
+                        </>
+                      )}
                   <strong>Drop-off:</strong> {formData.puntoDestino}
                 </p>
               </div>
@@ -1310,6 +1299,14 @@ Submitted by: Godandi & Sons Luxury Transport Widget
         <div class="info-item">
           <strong>Service Type:</strong> ${formData.tipoServicio}${formData.tipoServicio === 'Hourly' ? ` (${formData.hourlyHours} hours)` : ''}
         </div>
+        ${(formData.tipoServicio === 'Airport Arrival' || formData.tipoServicio === 'Airport Departure') ? `
+        <div class="info-item">
+          <strong>Airline:</strong> ${formData.airline || 'Not specified'}
+        </div>
+        <div class="info-item">
+          <strong>Flight Number:</strong> ${formData.flightNumber || 'Not specified'}
+        </div>
+        ` : ''}
         <div class="info-item">
           <strong>Date:</strong> ${formData.fecha}
         </div>
@@ -1325,7 +1322,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
         </div>
         ${formData.stops.length > 0 ? `
         <div class="info-item">
-          <strong>Stights:</strong> ${formData.stops.join(', ')}
+          <strong>Stops:</strong> ${formData.stops.join(', ')}
         </div>
         ` : ''}
         <div class="info-item">
