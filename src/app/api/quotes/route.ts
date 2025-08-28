@@ -11,14 +11,6 @@ function mustEnv() {
   }
 }
 
-function toISO(dateStr: string, hourStr: string) {
-  const date = new Date(`${dateStr} ${hourStr}`);
-  if (isNaN(date.getTime())) {
-    throw new Error("Invalid Date/Hour");
-  }
-  return date.toISOString();
-}
-
 function fingerprint(input: {
   email?: string;
   date?: string;
@@ -65,7 +57,7 @@ async function airtableSearchByFingerprint(fp: string) {
   return (data.records || []) as Array<{ id: string }>;
 }
 
-async function airtableCreate(fields: Record<string, any>) {
+async function airtableCreate(fields: Record<string, string | number>) {
   const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE)}`;
   
   // Debug logging
@@ -132,7 +124,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Map to Airtable fields
-    const fields: Record<string, any> = {
+    const fields: Record<string, string | number> = {
       "Passenger Name": passengerName,
       "Phone": phone || "",
       "Email": email,
@@ -150,11 +142,12 @@ export async function POST(req: NextRequest) {
       airtableId: rec.id 
     });
     
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const errorMessage = e instanceof Error ? e.message : "Server error";
     console.error("Quotes API error:", e);
     return NextResponse.json({ 
       ok: false, 
-      error: e.message ?? "Server error" 
+      error: errorMessage 
     }, { status: 500 });
   }
 }

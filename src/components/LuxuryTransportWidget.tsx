@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Mail, ChevronRight, ChevronLeft, X, Plus } from 'lucide-react'; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { Mail, ChevronRight, ChevronLeft, X, Plus } from 'lucide-react';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import AddressAutocomplete from './AddressAutocomplete';
 import RouteMap from './RouteMap';
@@ -60,7 +60,7 @@ const LuxuryTransportWidget = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const { isLoaded: isMapsLoaded, isError: mapsError } = useGoogleMaps();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState(''); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [submitMessage, setSubmitMessage] = useState('');
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   
   const [formData, setFormData] = useState<FormDataState>({
@@ -86,18 +86,7 @@ const LuxuryTransportWidget = () => {
     flightNumber: ''
   });
 
-  const countryCodes: { code: string; label: string }[] = [ // eslint-disable-line @typescript-eslint/no-unused-vars
-    { code: '+1', label: 'United States/Canada' },
-    { code: '+44', label: 'United Kingdom' },
-    { code: '+34', label: 'Spain' },
-    { code: '+33', label: 'France' },
-    { code: '+49', label: 'Germany' },
-    { code: '+39', label: 'Italy' },
-    { code: '+61', label: 'Australia' },
-    { code: '+81', label: 'Japan' },
-    { code: '+86', label: 'China' },
-    { code: '+971', label: 'UAE' },
-  ];
+
 
   const categorias: { key: Vehiculo['categoria']; label: string; icon: string }[] = [
     { key: 'Sedan', label: 'Sedan', icon: '' },
@@ -325,14 +314,14 @@ const LuxuryTransportWidget = () => {
   const totalSteps = 6;
 
   // Generar resumen para el email
-  const generateReservationSummary = () => {
+  const generateQuoteSummary = () => {
     const variant = getActiveVariant(formData.vehiculoSeleccionado as Vehiculo);
     const vehicleDisplay = variant 
       ? `${formData.vehiculoSeleccionado?.nombre} - ${variant.name}`
       : formData.vehiculoSeleccionado?.nombre;
 
     return `
-=== LUXURY CHAUFFEUR SERVICE RESERVATION ===
+=== LUXURY CHAUFFEUR SERVICE QUOTE ===
 
 PERSONAL INFORMATION:
 • Name: ${formData.nombre}
@@ -421,8 +410,8 @@ Submitted by: Godandi & Sons Luxury Transport Widget
     }
   };
 
-  const submitReservation = async () => {
-    console.log('submitReservation called');
+  const submitQuote = async () => {
+    console.log('submitQuote called');
     console.log('Current form data:', formData);
     console.log('Current step:', currentStep);
     console.log('Is step valid:', isStepValid());
@@ -432,7 +421,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
 
     try {
       // Generar el resumen
-      const summary = generateReservationSummary();
+      const summary = generateQuoteSummary();
       console.log('Generated summary:', summary);
 
       // Enviar por email usando la API
@@ -545,10 +534,10 @@ Submitted by: Godandi & Sons Luxury Transport Widget
       case 1:
         return (
           <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Quote your next trip</h2>
-              <p className="text-gray-600">Discreet. Punctual. Tailored by Godandi & Sons.</p>
-            </div>
+                          <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Quote your next trip</h2>
+                <p className="text-gray-600">Discreet. Punctual. Tailored by Godandi & Sons.</p>
+              </div>
             
             <div className="space-y-4">
               <div>
@@ -1062,10 +1051,10 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                     features: va.features ?? original.features,
                     gallery: va.gallery ?? original.gallery,
                   });
-                  setInfoVehicle(details as VehicleDetails); // eslint-disable-line @typescript-eslint/no-explicit-any
+                  setInfoVehicle(details as VehicleDetails);
                 }}
                 onClose={() => setInfoVehicle(null)}
-                onSelect={(v) => { handleInputChange('vehiculoSeleccionado', v as any); setInfoVehicle(null); }} // eslint-disable-line @typescript-eslint/no-explicit-any
+                onSelect={(v) => { handleInputChange('vehiculoSeleccionado', v as Vehiculo); setInfoVehicle(null); }}
               />
             )}
           </div>
@@ -1282,7 +1271,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
     </div>
     <div class="content">
       <div class="section">
-        <h2 class="section-title">Reservation Details</h2>
+        <h2 class="section-title">Quote Details</h2>
         <div class="info-item">
           <strong>Name:</strong> ${formData.nombre}
         </div>
@@ -1416,7 +1405,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
               <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-[#ebc651]/30 flex items-center justify-center">
                 <Mail className="w-8 h-8 text-black" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Reservation sent</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Quote sent</h3>
               <p className="text-sm text-gray-600 mb-6">We will contact you soon with your quote.</p>
               <button
                 onClick={() => { setSubmitMessage(''); setCurrentStep(1); }}
@@ -1464,7 +1453,7 @@ Submitted by: Godandi & Sons Luxury Transport Widget
                 <button
                   onClick={() => {
                     setShowEmailPreview(false);
-                    submitReservation();
+                    submitQuote();
                   }}
                   disabled={isSubmitting}
                   className="px-6 py-2 bg-[#ebc651] text-black rounded-lg hover:bg-[#ebc651]/80 disabled:opacity-50"
